@@ -196,11 +196,17 @@
 
     </div>
 
-    <script>
-// Konfigurasi Klien Supabase
-const SUPABASE_URL = "https://ufpvxfnbrgcvtzccaszk.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_YtNabEGPnwtek6pL8N8Ghg_CYk0-aJF";
-const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); // Pastikan S nya besar di sini!
+<script>
+// Gunakan variabel global window agar tidak bentrok deklarasi variabelnya
+window.supabaseUrl = "https://ufpvxfnbrgcvtzccaszk.supabase.co";
+window.supabaseKey = "sb_publishable_YtNabEGPnwtek6pL8N8Ghg_CYk0-aJF";
+
+// Memastikan inisialisasi menggunakan library global Supabase yang benar
+if (typeof Supabase !== 'undefined') {
+    window.supabase = Supabase.createClient(window.supabaseUrl, window.supabaseKey);
+} else {
+    console.error("Library Supabase tidak ditemukan. Pastikan CDN sudah terpasang di <head>");
+}
 
         // Fungsi Routing Halaman
         function navigateTo(pageId) {

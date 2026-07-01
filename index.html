@@ -6,6 +6,8 @@
     <title>PreOrderKu - Aplikasi Pre-Order Makanan</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Load Supabase Javasript Client library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans min-h-screen flex justify-center items-center p-0 md:p-4">
 
@@ -117,7 +119,7 @@
                         <h3 id="menu-category-title" class="font-bold text-gray-900 text-sm uppercase tracking-wider">Semua Menu</h3>
                         <span class="text-xs text-gray-400">Klik kategori di beranda untuk filter</span>
                     </div>
-                    <div id="menu-container" class="space-y-3 pb-6"></div>
+                    <div id="menu-container" class="space-y-3 pb-6"><!-- Diisi via API Supabase --></div>
                 </div>
             </div>
 
@@ -171,8 +173,8 @@
             </div>
 
             <div id="page-status_pesanan" class="page-content p-4 space-y-4 hidden">
-                <h3 class="font-bold text-gray-900 text-sm mb-1"><i class="fas fa-history mr-1 text-amber-500"></i> Riwayat 10 Pesanan Anda</h3>
-                <div id="orders-container" class="space-y-3 pb-6"></div>
+                <h3 class="font-bold text-gray-900 text-sm mb-1"><i class="fas fa-history mr-1 text-amber-500"></i> Riwayat Pesanan Anda</h3>
+                <div id="orders-container" class="space-y-3 pb-6"><!-- Diisi via API Supabase --></div>
             </div>
 
         </main>
@@ -195,71 +197,10 @@
     </div>
 
     <script>
-        // 1. DATA 10 MENU PER KATEGORI (TOTAL 40 ITEM)
-        const databaseMenu = {
-            nasi: [
-                { nama: "Nasi Khas Menggkopot", deskripsi: "Hidangan nasi otentik Melayu Menggkopot lengkap.", harga: 35000, emoji: "🍚" },
-                { nama: "Nasi Dagang Pekanbaru", deskripsi: "Nasi gurih kukus santan dengan tongkol bumbu aceh.", harga: 28000, emoji: "🍛" },
-                { nama: "Nasi Lemak Dapur Melayu", deskripsi: "Nasi lemak harum dengan sambal teri kacang & telur.", harga: 22000, emoji: "🍙" },
-                { nama: "Nasi Goreng Kampung Riau", deskripsi: "Nasi goreng bumbu terasi khas pedas sumatra.", friendship: 24000, harga: 24000, emoji: "🍳" },
-                { nama: "Nasi Campur Ayam Singgalang", deskripsi: "Nasi dengan aneka lauk pauk khas minang pesisir.", harga: 32000, emoji: "🍱" },
-                { nama: "Nasi Baung Asam Pedas", deskripsi: "Nasi putih hangat dipadu kuah kental asam pedas baung.", harga: 45000, emoji: "🥣" },
-                { nama: "Nasi Sup Tunjang PKU", deskripsi: "Nasi dengan sup kaldu kikil sapi yang gurih pekat.", harga: 40000, emoji: "🍲" },
-                { nama: "Nasi Ayam Kurma Melayu", deskripsi: "Ayam masak bumbu kurma putih gurih non-pedas.", harga: 30000, emoji: "🍗" },
-                { nama: "Nasi Kare Kambing Siak", deskripsi: "Nasi putih dengan gulai kambing rempah kaya rasa.", harga: 42000, emoji: "🍖" },
-                { nama: "Nasi Bakar Teri Daun Pisang", deskripsi: "Nasi gurih bungkus daun berisi tumis teri medan pedas.", harga: 20000, emoji: "🍙" }
-            ],
-            mie: [
-                { nama: "Mie Sagu Goreng Selatpanjang", deskripsi: "Mie sagu kenyal khas Riau ditumis dengan tauge segar.", harga: 23000, emoji: "🍜" },
-                { nama: "Mie Lendir Pekanbaru", deskripsi: "Mie kuning disiram kuah kacang kental manis gurih.", harga: 18000, emoji: "🍜" },
-                { nama: "Mie Tarempa Basah", deskripsi: "Mie telur pipih bumbu rempah seafood pedas.", harga: 27000, emoji: "🍝" },
-                { nama: "Mie Sagu Rebus Kuah Bening", deskripsi: "Mie sagu lokal dengan campuran ikan teri dan kucai.", harga: 22000, emoji: "🥣" },
-                { nama: "Kwetiau Goreng Seafood Melayu", deskripsi: "Kwetiau kenyal dengan udang dan cumi segar.", harga: 30000, emoji: "🍲" },
-                { nama: "Mie Jalor Khas Riau", deskripsi: "Mie kuah kaldu udang kental dengan taburan seledri.", harga: 25000, emoji: "🍜" },
-                { nama: "Bihun Goreng Kampung", deskripsi: "Bihun jagung kecap tradisional dengan suwiran ayam.", harga: 17000, emoji: "🍝" },
-                { nama: "Mie Goreng Aceh Kepulauan", deskripsi: "Mie tebal bumbu aceh dengan rempah tajam nusantara.", harga: 26000, emoji: "🍛" },
-                { nama: "Mie Rebus Tunjang", deskripsi: "Mie kuning kuah sup dengan potongan kikil empuk.", harga: 35000, emoji: "🍲" },
-                { nama: "Misun Kaldu Ayam Kampung", deskripsi: "Soun lembut kuah bening gurih kaldu asli.", harga: 19000, emoji: "🥣" }
-            ],
-            seafood: [
-                { nama: "Gulai Asam Pedas Patin", deskripsi: "Ikan patin segar dimasak kuah asam pedas legendaris.", harga: 38000, emoji: "🐟" },
-                { nama: "Cumi Goreng Tepung Cabai Garam", deskripsi: "Cumi krispi ditumis potongan cabai rawit merah.", harga: 35000, emoji: "🦑" },
-                { nama: "Udang Galah Bakar Madu", deskripsi: "Udang galah sungai besar dengan olesan madu manis.", harga: 65000, emoji: "🦐" },
-                { nama: "Ikan Baung Bakar Bambu", deskripsi: "Ikan baung bumbu tradisional dibakar di dalam bambu.", harga: 50000, emoji: "🐠" },
-                { nama: "Kepiting Saus Padang Pedas", deskripsi: "Kepiting lokal segar dengan lumatan saus padang pekat.", harga: 75000, emoji: "🦀" },
-                { nama: "Kerang Dara Rebus Saus Nanas", deskripsi: "Kerang dara segar disajikan dengan cocolan saus buah.", harga: 25000, emoji: "🦪" },
-                { nama: "Gulai Kepala Kakap Merah", deskripsi: "Kepala kakap ukuran besar bumbu gulai melayu asli.", harga: 55000, emoji: "🐟" },
-                { nama: "Patin Bakar Tempoyak", deskripsi: "Ikan patin bakar bumbu fermentasi durian gurih.", harga: 42000, emoji: "🐠" },
-                { nama: "Sotong Masak Hitam", deskripsi: "Sotong/Cumi dimasak bersama tinta aslinya, gurih alami.", harga: 34000, emoji: "🦑" },
-                { nama: "Sup Ikan Batam Spesial", deskripsi: "Sup fillet ikan tenggiri bening dengan sawi asin.", harga: 32000, emoji: "🥣" }
-            ],
-            kopi: [
-                { nama: "Kopi Jantan Kampar", deskripsi: "Kopi robusta murni kuat berstamina khas Riau.", harga: 15000, emoji: "☕" },
-                { nama: "Kopi Es Tiga Dara", deskripsi: "Perpaduan espresso lokal dengan susu kental manis dingin.", harga: 18000, emoji: "🥤" },
-                { nama: "Kopi Susu Gula Aren PKU", deskripsi: "Kopi susu kekinian ramah di lambung.", harga: 17000, emoji: "☕" },
-                { nama: "Kopi Liberika Rangsang", deskripsi: "Kopi buah khas lahan gambut Riau aromatik tinggi.", harga: 22000, emoji: "☕" },
-                { nama: "Teh Tarik Buih Melayu", deskripsi: "Teh hitam dicampur susu yang ditarik hingga berbusa.", harga: 14000, emoji: "🥤" },
-                { nama: "Kopi O Klasik", deskripsi: "Kopi hitam tradisional tanpa susu, manis pas.", harga: 12000, emoji: "☕" },
-                { nama: "Kopi Talua Sumatra", deskripsi: "Kopi kocok kuning telur ayam kampung, creamy gurih.", harga: 20000, emoji: "☕" },
-                { nama: "Es Kopi Cokelat Creamy", deskripsi: "Paduan robusta dan cokelat blend premium.", harga: 19000, emoji: "🥤" },
-                { nama: "Kopi V60 Mandheling", deskripsi: "Manual brew kopi arabika lokal aromatik buah segar.", harga: 24000, emoji: "☕" },
-                { nama: "Es Lemon Tea Rempah", deskripsi: "Penyegar setelah makan berat khas Dapur Melayu.", harga: 12000, emoji: "🥤" }
-            ]
-        };
-
-        // 2. DATA 10 STATUS PESANAN (RIWAYAT USER)
-        const databasePesanan = [
-            { kode: "PO-PKU-992", menu: "Nasi Khas Menggkopot", total: 35000, status: "Siap Diambil", warna: "bg-amber-500", tanggal: "Hari ini, 12:15 WIB" },
-            { kode: "PO-PKU-991", menu: "Kopi Jantan Kampar + Mie Lendir", total: 33000, status: "Selesai", warna: "bg-green-600", tanggal: "Kemarin, 14:00 WIB" },
-            { kode: "PO-PKU-990", menu: "Gulai Asam Pedas Patin", total: 38000, status: "Selesai", warna: "bg-green-600", tanggal: "29 Jun 2026, 13:10 WIB" },
-            { kode: "PO-PKU-989", menu: "Udang Galah Bakar Madu", total: 65000, status: "Selesai", warna: "bg-green-600", tanggal: "28 Jun 2026, 19:30 WIB" },
-            { kode: "PO-PKU-988", menu: "Mie Sagu Goreng Selatpanjang", total: 23000, status: "Dibatalkan", warna: "bg-red-500", tanggal: "27 Jun 2026, 11:00 WIB" },
-            { kode: "PO-PKU-987", menu: "Nasi Dagang Pekanbaru", total: 28000, status: "Selesai", warna: "bg-green-600", tanggal: "25 Jun 2026, 08:45 WIB" },
-            { kode: "PO-PKU-986", menu: "Kopi Es Tiga Dara", total: 18000, status: "Selesai", warna: "bg-green-600", tanggal: "24 Jun 2026, 16:20 WIB" },
-            { kode: "PO-PKU-985", menu: "Kepiting Saus Padang Pedas", total: 75000, status: "Selesai", warna: "bg-green-600", tanggal: "22 Jun 2026, 20:00 WIB" },
-            { kode: "PO-PKU-984", menu: "Mie Lendir Pekanbaru (2 Porsi)", total: 36000, status: "Selesai", warna: "bg-green-600", tanggal: "20 Jun 2026, 09:15 WIB" },
-            { kode: "PO-PKU-983", menu: "Nasi Sup Tunjang PKU", total: 40000, status: "Selesai", warna: "bg-green-600", tanggal: "18 Jun 2026, 12:30 WIB" }
-        ];
+        // Konfigurasi Klien Supabase 
+        const SUPABASE_URL = "https://ufpvxfnbrgcvtzccaszk.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_YtNabEGPnwtEk6pL8N8Ghg_CYk0-aJF";
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Fungsi Routing Halaman
         function navigateTo(pageId) {
@@ -302,59 +243,108 @@
                         : "text-gray-400 hover:text-gray-600 flex flex-col items-center gap-1 transition cursor-pointer";
                 }
             });
+
+            // Trigger Fetch Otomatis saat berpindah ke tab menu atau pesanan
+            if (pageId === 'detail_restoran') {
+                renderMenu('nasi'); // Default awal jika langsung di-klik lewat navbar
+            } else if (pageId === 'status_pesanan') {
+                renderStatusPesanan();
+            }
         }
 
-        // Render Daftar Menu ke Layar Berdasarkan Kategori
-        function renderMenu(categoryKey = 'nasi') {
+        // AMBIL DATA DARI TABEL 'menu' SUPABASE
+        async function renderMenu(categoryKey = 'nasi') {
             const container = document.getElementById('menu-container');
             const titleElement = document.getElementById('menu-category-title');
-            container.innerHTML = '';
             
             titleElement.innerText = `Kategori: ${categoryKey}`;
-            const items = databaseMenu[categoryKey] || databaseMenu['nasi'];
+            container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Memuat Menu...</p>`;
+            
+            try {
+                // Request data dengan filter kolom 'kategori'
+                let { data: items, error } = await supabase
+                    .from('menu')
+                    .select('*')
+                    .eq('kategori', categoryKey);
 
-            items.forEach(item => {
-                const card = document.createElement('div');
-                card.className = "flex items-center gap-3 bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm";
-                card.innerHTML = `
-                    <div class="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center text-xl shrink-0">${item.emoji}</div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-bold text-gray-900 text-xs truncate">${item.nama}</h4>
-                        <p class="text-[11px] text-gray-500 truncate mt-0.5">${item.deskripsi}</p>
-                        <p class="text-xs font-bold text-amber-600 mt-0.5">Rp ${item.harga.toLocaleString('id-ID')}</p>
-                    </div>
-                    <button onclick="prosesCheckout('${item.nama}', ${item.harga})" class="w-7 h-7 bg-amber-500 text-white rounded-full flex items-center justify-center hover:bg-amber-600 transition cursor-pointer shrink-0">
-                        <i class="fas fa-plus text-[10px]"></i>
-                    </button>
-                `;
-                container.appendChild(card);
-            });
+                if (error) throw error;
+
+                container.innerHTML = '';
+                if (!items || items.length === 0) {
+                    container.innerHTML = `<p class="text-xs text-center py-4 text-gray-500">Menu belum tersedia.</p>`;
+                    return;
+                }
+
+                items.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = "flex items-center gap-3 bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm";
+                    card.innerHTML = `
+                        <div class="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center text-xl shrink-0">${item.emoji || '🍽️'}</div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-bold text-gray-900 text-xs truncate">${item.nama}</h4>
+                            <p class="text-[11px] text-gray-500 truncate mt-0.5">${item.deskripsi || ''}</p>
+                            <p class="text-xs font-bold text-amber-600 mt-0.5">Rp ${Number(item.harga).toLocaleString('id-ID')}</p>
+                        </div>
+                        <button onclick="prosesCheckout('${item.nama}', ${item.harga})" class="w-7 h-7 bg-amber-500 text-white rounded-full flex items-center justify-center hover:bg-amber-600 transition cursor-pointer shrink-0">
+                            <i class="fas fa-plus text-[10px]"></i>
+                        </button>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (err) {
+                console.error("Gagal memuat menu:", err.message);
+                container.innerHTML = `<p class="text-xs text-red-500 text-center py-4">Gagal memuat data menu.</p>`;
+            }
         }
 
-        // Render 10 Status Transaksi
-        function renderStatusPesanan() {
+        // AMBIL DATA DARI TABEL 'pesanan' SUPABASE
+        async function renderStatusPesanan() {
             const container = document.getElementById('orders-container');
-            container.innerHTML = '';
+            container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Memuat Riwayat Pesanan...</p>`;
 
-            databasePesanan.forEach(order => {
-                const card = document.createElement('div');
-                card.className = "bg-white p-3 rounded-xl border border-gray-100 shadow-sm space-y-2 text-xs relative";
-                card.innerHTML = `
-                    <div class="flex justify-between items-center border-b border-gray-50 pb-1.5">
-                        <span class="font-mono text-gray-400 text-[10px]">${order.kode}</span>
-                        <span class="text-[11px] text-white px-2 py-0.5 rounded-full font-bold ${order.warna}">${order.status}</span>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-gray-800 truncate">${order.menu}</h4>
-                        <p class="text-[10px] text-gray-400 mt-0.5">${order.tanggal}</p>
-                    </div>
-                    <div class="flex justify-between items-center pt-1 text-[11px]">
-                        <span class="text-gray-500">Total Dibayar:</span>
-                        <span class="font-bold text-amber-600">Rp ${order.total.toLocaleString('id-ID')}</span>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
+            try {
+                // Mengambil riwayat transaksi terbaru
+                let { data: databasePesanan, error } = await supabase
+                    .from('pesanan')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                container.innerHTML = '';
+                if (!databasePesanan || databasePesanan.length === 0) {
+                    container.innerHTML = `<p class="text-xs text-center py-4 text-gray-500">Belum ada riwayat pesanan.</p>`;
+                    return;
+                }
+
+                databasePesanan.forEach(order => {
+                    // Logika pewarnaan badge dinamis berdasarkan status
+                    let warnaBg = "bg-amber-500";
+                    if (order.status === "Selesai") warnaBg = "bg-green-600";
+                    if (order.status === "Dibatalkan") warnaBg = "bg-red-500";
+
+                    const card = document.createElement('div');
+                    card.className = "bg-white p-3 rounded-xl border border-gray-100 shadow-sm space-y-2 text-xs relative";
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center border-b border-gray-50 pb-1.5">
+                            <span class="font-mono text-gray-400 text-[10px]">${order.kode}</span>
+                            <span class="text-[11px] text-white px-2 py-0.5 rounded-full font-bold ${warnaBg}">${order.status}</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800 truncate">${order.menu}</h4>
+                            <p class="text-[10px] text-gray-400 mt-0.5">${order.tanggal || ''}</p>
+                        </div>
+                        <div class="flex justify-between items-center pt-1 text-[11px]">
+                            <span class="text-gray-500">Total Dibayar:</span>
+                            <span class="font-bold text-amber-600">Rp ${Number(order.total).toLocaleString('id-ID')}</span>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (err) {
+                console.error("Gagal memuat pesanan:", err.message);
+                container.innerHTML = `<p class="text-xs text-red-500 text-center py-4">Gagal memuat data pesanan.</p>`;
+            }
         }
 
         // Filter Kategori dari Beranda
@@ -376,8 +366,6 @@
 
         // Inisialisasi awal saat web dibuka
         window.onload = function() {
-            renderMenu('nasi');
-            renderStatusPesanan();
             navigateTo('splash');
         };
     </script>
